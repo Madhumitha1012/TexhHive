@@ -1,0 +1,193 @@
+<!doctype html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width,initial-scale=1"
+    >
+
+    <title>Supplier Quotations | TexHive</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+</head>
+
+
+<body onload="init()">
+
+    <header class="nav">
+
+        <a
+            class="logo"
+            href="supplier-dashboard.html"
+        >
+            TEX<span>HIVE</span>
+        </a>
+
+        <div>
+
+            <a
+                class="ghost"
+                href="supplier-dashboard.html"
+            >
+                Dashboard
+            </a>
+
+            <button
+                class="ghost"
+                onclick="logout()"
+            >
+                Logout
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <main class="page">
+
+        <div class="page-head">
+
+            <div>
+
+                <p class="eyebrow">
+                    SUPPLIER WORKSPACE
+                </p>
+
+                <h1>
+                    Quotations
+                </h1>
+
+            </div>
+
+        </div>
+
+
+        <section
+            id="formPanel"
+            class="card"
+            style="display:none;margin-bottom:20px"
+        >
+
+            <h2>
+                Send Quotation
+            </h2>
+
+            <p
+                id="info"
+                class="muted"
+            ></p>
+
+
+            <form
+                id="form"
+                class="form-grid"
+            >
+
+                <label>
+                    Unit Price
+
+                    <input
+                        id="unitPrice"
+                        type="number"
+                        min="0"
+                        required
+                    >
+                </label>
+
+
+                <label>
+                    MOQ
+
+                    <input
+                        id="moq"
+                        type="number"
+                        min="1"
+                        required
+                    >
+                </label>
+
+
+                <label>
+                    Delivery Days
+
+                    <input
+                        id="days"
+                        type="number"
+                        min="1"
+                        required
+                    >
+                </label>
+
+
+                <label>
+                    Payment Terms
+
+                    <input
+                        id="terms"
+                        value="30% advance, 70% before dispatch"
+                        required
+                    >
+                </label>
+
+
+                <button class="primary fullrow">
+                    SEND QUOTATION
+                </button>
+
+            </form>
+
+        </section>
+
+
+        <section class="panel">
+
+            <div id="quotes"></div>
+
+        </section>
+
+    </main>
+
+
+    <script src="js/api.js"></script><script src="js/core.js"></script>
+
+    <script>
+let rfq=null;
+async function init(){
+    if(!ensureUser())return;
+    if(user().role!=='SUPPLIER'){location.href='dashboard.html';return;}
+    nav();
+    const rid=new URLSearchParams(location.search).get('rfqId');
+    try{
+        if(rid){
+            rfq=await apiGet('/rfqs/'+encodeURIComponent(rid));
+            if(String(rfq.supplierId)!==String(user().id))rfq=null;
+        }
+        if(rfq){formPanel.style.display='block';info.textContent=`${rfq.productName} · ${rfq.quantity} ${rfq.unit} · Buyer ${rfq.buyerId}`;}
+        form.onsubmit=async e=>{
+            e.preventDefault();if(!rfq)return;
+            const q={id:'QUO-'+Date.now(),rfqId:rfq.id,buyerId:rfq.buyerId,supplierId:user().id,productId:rfq.productId,productName:rfq.productName,quantity:rfq.quantity,unit:rfq.unit,unitPrice:+unitPrice.value,moq:+moq.value,deliveryDays:+days.value,paymentTerms:terms.value,totalPrice:+unitPrice.value*rfq.quantity,status:'SENT'};
+            try{await apiPost('/quotations',q);await apiPatch('/rfqs/'+encodeURIComponent(rfq.id)+'/status',{status:'QUOTED'});location.href='supplier-quotations.html';}
+            catch(err){info.textContent=err.message||'Unable to send quotation.';}
+        };
+        await render();
+    }catch(e){info.textContent='Unable to load RFQ.';}
+}
+async function render(){
+    const a=await apiGet('/quotations/supplier/'+encodeURIComponent(user().id));
+    quotes.innerHTML=a.length?a.map(q=>`<div class="activity-row"><span><b>${escapeHtml(q.productName)}</b><br><small class="muted">₹${escapeHtml(q.unitPrice)}/${escapeHtml(q.unit)} · MOQ ${escapeHtml(q.moq)} · ${escapeHtml(q.deliveryDays)} days</small></span><span class="badge ${q.status==='ACCEPTED'?'good':'warn'}">${escapeHtml(q.status)}</span></div>`).join(''):'<div class="empty">No quotations sent yet.</div>';
+}
+</script>
+
+<script src="js/sidebar.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Join TexHive</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        /* Registration role selector */
+        .role-switch {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0 25px;
+        }
+
+        .role-switch button {
+            flex: 1;
+            padding: 14px 16px;
+            border: 1px solid #333;
+            border-radius: 10px;
+            background: #111;
+            color: #aaa;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .role-switch button:hover {
+            color: #fff;
+            border-color: #555;
+        }
+
+        .role-switch button.active {
+            background: #d7ff45;
+            color: #000;
+            border-color: #d7ff45;
+            box-shadow: 0 0 18px rgba(215, 255, 69, 0.15);
+        }
+
+        .role-switch button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        #registerForm button[type="submit"] {
+            cursor: pointer;
+        }
+
+        #registerForm button[type="submit"]:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+    </style>
+</head>
+
+<body class="auth-page">
+
+    <div class="auth-card wide">
+
+        <a class="logo" href="index.html">
+            TEX<span>HIVE</span>
+        </a>
+
+        <p class="eyebrow">
+            JOIN THE TEXTILE MARKET
+        </p>
+
+        <h1>
+            Create your account
+        </h1>
+
+        <!-- Buyer / Supplier selector -->
+        <div class="role-switch">
+
+            <button
+                type="button"
+                data-role-btn="BUYER"
+                class="active">
+                JOIN AS BUYER
+            </button>
+
+            <button
+                type="button"
+                data-role-btn="SUPPLIER">
+                JOIN AS SUPPLIER
+            </button>
+
+        </div>
+
+        <form id="registerForm">
+
+            <!-- Selected role -->
+            <input
+                type="hidden"
+                id="role"
+                name="role"
+                value="BUYER">
+
+            <label>
+                Full name
+
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    autocomplete="name"
+                    required>
+            </label>
+
+            <label>
+                Company name
+
+                <input
+                    type="text"
+                    id="companyName"
+                    name="companyName"
+                    autocomplete="organization"
+                    required>
+            </label>
+
+            <label>
+                Email
+
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    autocomplete="email"
+                    required>
+            </label>
+
+            <label>
+                Phone
+
+                <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    autocomplete="tel">
+            </label>
+
+            <label>
+                Password
+
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    minlength="6"
+                    autocomplete="new-password"
+                    required>
+            </label>
+
+            <button
+                type="submit"
+                class="primary full">
+                CREATE ACCOUNT
+            </button>
+
+        </form>
+
+        <p
+            id="message"
+            class="message">
+        </p>
+
+        <p class="small">
+            Already registered?
+            <a href="login.html">Login</a>
+        </p>
+
+    </div>
+
+    <!-- Load in this order -->
+    <script src="js/api.js"></script>
+    <script src="js/core.js"></script>
+    <script src="js/auth.js"></script>
+
+</body>
+
+</html>
+

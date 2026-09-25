@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Quotations | TexHive</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+
+<body onload="initQuotes()">
+
+    <header class="nav">
+
+        <a class="logo" href="dashboard.html">
+            TEX<span>HIVE</span>
+        </a>
+
+        <a class="ghost" href="dashboard.html">
+            Dashboard
+        </a>
+
+    </header>
+
+
+    <main class="page">
+
+        <div class="page-head">
+
+            <div>
+
+                <p class="eyebrow">
+                    BUYER WORKSPACE
+                </p>
+
+                <h1>
+                    Quotations
+                </h1>
+
+            </div>
+
+        </div>
+
+
+        <section class="panel">
+
+            <div id="quotes"></div>
+
+        </section>
+
+    </main>
+
+
+    <script src="js/api.js"></script><script src="js/core.js"></script>
+
+
+    <script>
+async function initQuotes(){
+    if(!ensureUser())return;
+    if(user().role!=='BUYER'){location.href=user().role==='SUPPLIER'?'supplier-quotations.html':'admin.html';return;}
+    nav(); await renderQuotes();
+}
+async function renderQuotes(){
+    const qs=await apiGet('/quotations/buyer/'+encodeURIComponent(user().id));
+    document.getElementById('quotes').innerHTML=qs.length?qs.map(q=>`<div class="activity-row"><span><b>${escapeHtml(q.productName)}</b><br><small class="muted">Supplier ID: ${escapeHtml(q.supplierId)} · ₹${escapeHtml(q.unitPrice)}/${escapeHtml(q.unit)}</small></span><span><span class="badge">${escapeHtml(q.status)}</span>${q.status==='SENT'?` <button class="primary" onclick="acceptQ('${q.id}')">ACCEPT</button> <button class="ghost" onclick="rejectQ('${q.id}')">REJECT</button>`:''}</span></div>`).join(''):'<div class="empty">No quotations received yet.</div>';
+}
+async function acceptQ(i){
+    try{
+        const qs=await apiGet('/quotations/buyer/'+encodeURIComponent(user().id));
+        const q=qs.find(x=>String(x.id)===String(i)); if(!q)return;
+        await apiPatch('/quotations/'+encodeURIComponent(q.id)+'/status',{status:'ACCEPTED'});
+        const [rfq,product,users]=await Promise.all([
+            apiGet('/rfqs/'+encodeURIComponent(q.rfqId)),
+            apiGet('/products/'+encodeURIComponent(q.productId)),
+            apiGet('/users')
+        ]);
+        const supplier=users.find(x=>String(x.id)===String(q.supplierId));
+        const buyer=user();
+        const expected=q.deliveryDays?new Date(Date.now()+Number(q.deliveryDays)*86400000).toISOString().slice(0,10):rfq.requiredDeliveryDate;
+        await apiPost('/orders',{id:'ORD-'+Date.now(),buyerId:buyer.id,buyerName:buyer.name,buyerCompany:buyer.companyName,buyerPhone:buyer.phone,supplierId:q.supplierId,supplierName:supplier?.name,supplierCompany:supplier?.companyName,supplierLocation:supplier?.address,quotationId:q.id,productId:q.productId,productName:q.productName,category:product?.category,quantity:q.quantity,unit:q.unit,moq:q.moq,unitPrice:q.unitPrice,totalAmount:q.totalPrice,deliveryDays:q.deliveryDays,paymentTerms:q.paymentTerms,requiredDeliveryDate:rfq.requiredDeliveryDate,deliveryLocation:rfq.deliveryLocation,expectedDate:expected,status:'CONFIRMED'});
+        await apiPatch('/rfqs/'+encodeURIComponent(rfq.id)+'/status',{status:'ORDERED'});
+        location.href='orders.html';
+    }catch(e){alert(e.message||'Unable to create order.');}
+}
+async function rejectQ(i){try{await apiPatch('/quotations/'+encodeURIComponent(i)+'/status',{status:'REJECTED'});await renderQuotes();}catch(e){alert(e.message||'Unable to reject quotation.');}}
+
+</script>
+
+<script src="js/sidebar.js"></script>
+</body>
+
+</html>

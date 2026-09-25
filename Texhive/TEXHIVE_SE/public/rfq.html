@@ -1,0 +1,142 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>RFQ | TexHive</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+
+<body onload="initRfq()">
+
+    <header class="nav">
+
+        <a class="logo" href="dashboard.html">
+            TEX<span>HIVE</span>
+        </a>
+
+        <div>
+
+            <a class="ghost" href="dashboard.html">
+                Dashboard
+            </a>
+
+            <a class="ghost" href="marketplace.html">
+                Marketplace
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <main class="page">
+
+        <div class="page-head">
+
+            <div>
+
+                <p class="eyebrow">
+                    REQUEST FOR QUOTATION
+                </p>
+
+                <h1>
+                    Create RFQ
+                </h1>
+
+            </div>
+
+        </div>
+
+
+        <form
+            id="rfqForm"
+            class="card form-grid"
+        >
+
+            <label>
+                Product
+
+                <select id="product"></select>
+            </label>
+
+
+            <label>
+                Quantity
+
+                <input
+                    id="quantity"
+                    type="number"
+                    min="1"
+                    required
+                >
+            </label>
+
+
+            <label>
+                Unit
+
+                <input
+                    id="unit"
+                    value="kg"
+                    required
+                >
+            </label>
+
+
+            <label>
+                Required Delivery Date
+
+                <input
+                    id="date"
+                    type="date"
+                >
+            </label>
+
+
+            <label>
+                Delivery Location
+
+                <input
+                    id="location"
+                    required
+                >
+            </label>
+
+
+            <label class="fullrow">
+                Additional Requirements
+
+                <textarea id="requirements"></textarea>
+            </label>
+
+
+            <button class="primary fullrow">
+                SEND RFQ
+            </button>
+
+
+            <p
+                id="msg"
+                class="message fullrow"
+            ></p>
+
+        </form>
+
+        <section class="panel" style="margin-top:20px"><div class="panel-title"><h2>My Previous RFQs</h2><a class="ghost" href="dashboard.html">Dashboard</a></div><div id="previousRfqs" class="empty">No RFQs yet.</div></section>
+
+    </main>
+
+
+    <script src="js/api.js"></script><script src="js/core.js"></script>
+    <script src="js/marketplace.js"></script>
+    <script src="js/rfq.js"></script>
+
+<script src="js/sidebar.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,127 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Payment | TexHive</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+
+<body onload="initPayment()">
+
+    <header class="nav">
+
+        <a class="logo" href="dashboard.html">
+            TEX<span>HIVE</span>
+        </a>
+
+    </header>
+
+
+    <main class="page">
+
+        <div class="page-head">
+
+            <div>
+
+                <p class="eyebrow">
+                    PAYMENT
+                </p>
+
+                <h1>
+                    Complete payment
+                </h1>
+
+            </div>
+
+        </div>
+
+
+        <form id="pay" class="card form-grid">
+
+            <label>
+                Order ID
+
+                <input
+                    id="orderId"
+                    required
+                >
+            </label>
+
+
+            <label>
+                Amount
+
+                <input
+                    id="amount"
+                    type="number"
+                    required
+                >
+            </label>
+
+
+            <label>
+                Payment Method
+
+                <select id="method">
+
+                    <option>
+                        Bank Transfer
+                    </option>
+
+                    <option>
+                        UPI
+                    </option>
+
+                    <option>
+                        Card
+                    </option>
+
+                    <option>
+                        Net Banking
+                    </option>
+
+                </select>
+
+            </label>
+
+
+            <button class="primary fullrow">
+                SUBMIT PAYMENT
+            </button>
+
+
+            <p
+                id="msg"
+                class="message fullrow"
+            ></p>
+
+        </form>
+
+    </main>
+
+
+    <script src="js/api.js"></script><script src="js/core.js"></script>
+
+
+    <script>
+function initPayment(){
+    if(!ensureUser())return;
+    document.getElementById('pay').onsubmit=async e=>{
+        e.preventDefault();
+        try{
+            await apiPost('/payments',{id:'PAY-'+Date.now(),buyerId:user().id,orderId:document.getElementById('orderId').value,amount:Number(document.getElementById('amount').value),method:document.getElementById('method').value,status:'PENDING'});
+            document.getElementById('msg').textContent='Payment request recorded in MySQL.';
+        }catch(err){document.getElementById('msg').textContent=err.message||'Unable to record payment.';}
+    };
+}
+</script>
+
+<script src="js/sidebar.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Dashboard | TexHive</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body onload="initAdmin()">
+<header class="nav">
+  <a class="logo" href="admin.html">TEX<span>HIVE</span></a>
+  <div><span class="muted">Administrator</span><button class="ghost" onclick="logout()">Logout</button></div>
+</header>
+<main class="dashboard">
+  <div class="dash-head">
+    <div><p class="eyebrow">ADMINISTRATION</p><h1>Admin Dashboard</h1><p class="muted">Manage TexHive users, suppliers, products, RFQs and orders.</p></div>
+  </div>
+
+  <section class="stat-grid">
+    <div class="stat"><small>TOTAL USERS</small><strong id="u">0</strong></div>
+    <div class="stat"><small>SUPPLIERS</small><strong id="s">0</strong></div>
+    <div class="stat"><small>PENDING VERIFICATION</small><strong id="v">0</strong></div>
+    <div class="stat"><small>PRODUCTS</small><strong id="p">0</strong></div>
+    <div class="stat"><small>RFQS</small><strong id="r">0</strong></div>
+    <div class="stat"><small>ORDERS</small><strong id="o">0</strong></div>
+  </section>
+
+  <section class="panel" style="margin-bottom:20px">
+    <div class="panel-title"><h2>Supplier Verification</h2><span class="badge warn">Admin Only</span></div>
+    <div id="supplierList"></div>
+  </section>
+
+  <section class="panel" style="margin-top:20px">
+    <div class="panel-title"><h2>Products Added to TexHive</h2><span class="badge">Supplier products</span></div>
+    <div id="productList"></div>
+  </section>
+
+  <section class="panel" style="margin-top:20px"><div class="panel-title"><h2>Recent Order</h2><span class="badge">Latest only</span></div><div id="orderList"></div></section>
+</main>
+
+<script src="js/api.js"></script><script src="js/core.js"></script>
+<script>
+async function initAdmin(){
+    if(!ensureUser()) return;
+    if(user().role!=='ADMIN'){location.href='dashboard.html';return;}
+    await renderAdmin();
+}
+
+async function renderAdmin(){
+    try{
+        const [users,products,rfqs,orders]=await Promise.all([
+            apiGet('/users'), apiGet('/products'), apiGet('/rfqs/buyer/0').catch(()=>[]), apiGet('/orders/buyer/0').catch(()=>[])
+        ]);
+        // RFQ/order counts are obtained by the dedicated admin endpoints below.
+        const allRfqs = await apiGet('/admin/rfqs');
+        const allOrders = await apiGet('/admin/orders');
+
+        const suppliers=users.filter(x=>x.role==='SUPPLIER');
+        u.textContent=users.filter(x=>x.role!=='ADMIN').length;
+        s.textContent=suppliers.length;
+        v.textContent=suppliers.filter(x=>x.status==='PENDING').length;
+        p.textContent=products.length;
+        r.textContent=allRfqs.length;
+        o.textContent=allOrders.length;
+
+        supplierList.innerHTML=suppliers.length ? suppliers.map(x=>{
+            const status=x.status||'PENDING';
+            const buttons=status==='PENDING'
+                ? `<button type="button" class="primary" onclick="verifySupplier('${x.id}')">VERIFY</button> <button type="button" class="ghost" onclick="rejectSupplier('${x.id}')">REJECT</button>`
+                : `<span class="badge ${status==='ACTIVE'?'good':'danger'}">${escapeHtml(status)}</span>`;
+            return `<div class="activity-row"><span><b>${escapeHtml(x.companyName||x.name||'Supplier')}</b><br><small class="muted">${escapeHtml(x.name||'')} · ${escapeHtml(x.email||'')} · ${escapeHtml(x.phone||'No phone')} · ID ${escapeHtml(x.id)}</small></span><span>${buttons}</span></div>`;
+        }).join(''):'<div class="empty">No suppliers registered yet.</div>';
+
+        productList.innerHTML=products.length
+            ? products.map(x=>`<div class="activity-row"><span><b>${escapeHtml(x.name||'Product')}</b><br><small class="muted">Product ID ${escapeHtml(x.id)} · Category ${escapeHtml(x.category||'')} · Supplier ${escapeHtml(x.supplierId||'')} · ₹${escapeHtml(x.price||0)}/${escapeHtml(x.unit||'')}</small></span><span class="badge ${String(x.status).toUpperCase()==='ACTIVE'?'good':'warn'}">${escapeHtml(x.status||'PENDING')}</span></div>`).join('')
+            : '<div class="empty">No products have been added yet.</div>';
+
+        orderList.innerHTML=allOrders.length
+            ? allOrders.slice(0,8).map(x=>`<div class="activity-row"><span><b>Order #${escapeHtml(x.id)}</b><br><small class="muted">${escapeHtml(x.productName||'')} · Buyer ${escapeHtml(x.buyerId||'')} · Supplier ${escapeHtml(x.supplierId||'')}</small></span><span class="badge">${escapeHtml(x.status||'')}</span></div>`).join('')
+            : '<div class="empty">No orders yet.</div>';
+    }catch(e){
+        supplierList.innerHTML='<div class="empty">Unable to load admin data.</div>';
+    }
+}
+
+async function verifySupplier(id){
+    try{
+        await apiPatch('/users/'+encodeURIComponent(id)+'/status',{status:'ACTIVE'});
+        await apiPatch('/products/supplier/'+encodeURIComponent(id)+'/status',{status:'ACTIVE'});
+        await renderAdmin();
+    }catch(e){alert(e.message||'Unable to verify supplier.');}
+}
+
+async function rejectSupplier(id){
+    try{
+        await apiPatch('/users/'+encodeURIComponent(id)+'/status',{status:'REJECTED'});
+        await apiPatch('/products/supplier/'+encodeURIComponent(id)+'/status',{status:'INACTIVE'});
+        await renderAdmin();
+    }catch(e){alert(e.message||'Unable to reject supplier.');}
+}
+</script>
+<script src="js/sidebar.js"></script>
+</body>
+</html>
