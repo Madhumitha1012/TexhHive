@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:8080/api';
+const API_BASE = 'https://texhhive.onrender.com/api';
 
 async function apiRequest(path, options = {}) {
     const config = {
