@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Market Price Intelligence | TexHive</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+
+<body onload="initPrices()">
+
+    <header class="nav">
+
+        <a class="logo" href="dashboard.html">
+            TEX<span>HIVE</span>
+        </a>
+
+        <div>
+
+            <a class="ghost" href="dashboard.html">
+                Dashboard
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <main class="page">
+
+        <div class="page-head">
+
+            <div>
+
+                <p class="eyebrow">
+                    MARKET PRICE INTELLIGENCE
+                </p>
+
+                <h1>
+                    Daily textile market references
+                </h1>
+
+                <p class="muted">
+                    Government market data is shown when configured.
+                    Demo rows are clearly labelled until a live API key/resource
+                    is connected.
+                </p>
+
+            </div>
+
+
+            <button
+                class="primary"
+                onclick="syncPrices()"
+            >
+                SYNC GOVERNMENT DATA
+            </button>
+
+        </div>
+
+
+        <div
+            class="panel"
+            style="margin-bottom: 20px"
+        >
+
+            <div class="form-grid">
+
+                <label>
+                    Product
+
+                    <input
+                        id="productFilter"
+                        placeholder="Cotton, yarn, fabric..."
+                    >
+                </label>
+
+
+                <label>
+                    Location
+
+                    <input
+                        id="locationFilter"
+                        placeholder="Coimbatore, Erode..."
+                    >
+                </label>
+
+
+                <label>
+                    Date
+
+                    <input
+                        id="dateFilter"
+                        type="date"
+                    >
+                </label>
+
+
+                <div style="display: flex; align-items: end">
+
+                    <button
+                        class="primary full"
+                        onclick="loadPrices()"
+                    >
+                        SEARCH PRICES
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div
+            id="priceMessage"
+            class="message"
+        ></div>
+
+
+        <div
+            id="prices"
+            class="grid"
+        ></div>
+
+
+        <section
+            class="section"
+            style="padding: 60px 0 0"
+        >
+
+            <div class="panel">
+
+                <p class="eyebrow">
+                    SOURCE NOTE
+                </p>
+
+                <h2>
+                    Government data integration
+                </h2>
+
+                <p class="muted">
+                    TexHive is prepared to consume the Government of India's
+                    Open Government Data / AGMARKNET daily mandi-price resource.
+                    That source is daily-granularity and is published by the
+                    Department of Agriculture & Farmers Welfare. It is suitable
+                    for raw agricultural commodities such as cotton where the
+                    dataset provides a matching commodity/market record.
+                    Cotton yarn and finished-fabric reference prices should
+                    only be shown when a source actually publishes those items.
+                </p>
+
+                <p
+                    class="muted"
+                    style="font-size: 12px"
+                >
+                    Source: data.gov.in / AGMARKNET. Verify the source, unit
+                    and date before using a price for a real commercial decision.
+                </p>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script src="js/api.js"></script><script src="js/core.js"></script>
+
+
+    <script>
+
+        const demoPrices = [
+            [
+                'Cotton Yarn 30s',
+                'Coimbatore',
+                285,
+                'kg',
+                'UP',
+                'TexHive demo reference'
+            ],
+
+            [
+                'Cotton Yarn 30s',
+                'Tiruppur',
+                292,
+                'kg',
+                'UP',
+                'TexHive demo reference'
+            ],
+
+            [
+                'Cotton Yarn 30s',
+                'Erode',
+                280,
+                'kg',
+                'DOWN',
+                'TexHive demo reference'
+            ],
+
+            [
+                'Cotton Fabric',
+                'Coimbatore',
+                118,
+                'metre',
+                'STABLE',
+                'TexHive demo reference'
+            ],
+
+            [
+                'Denim Fabric',
+                'Erode',
+                175,
+                'metre',
+                'STABLE',
+                'TexHive demo reference'
+            ]
+        ];
+
+
+        function today() {
+
+            return new Date()
+                .toISOString()
+                .slice(0, 10);
+
+        }
+
+
+        function initPrices() {
+
+            ensureUser();
+
+            document.getElementById('dateFilter').value = today();
+
+            loadPrices();
+
+        }
+
+
+        async function loadPrices() {
+
+            const date =
+                document.getElementById('dateFilter').value || today();
+
+            const product =
+                document.getElementById('productFilter').value.trim();
+
+            const location =
+                document.getElementById('locationFilter').value.trim();
+
+            const msg =
+                document.getElementById('priceMessage');
+
+
+            try {
+
+                let url =
+                    API +
+                    '/market-intelligence/prices?date=' +
+                    encodeURIComponent(date);
+
+
+                if (product) {
+
+                    url +=
+                        '&product=' +
+                        encodeURIComponent(product);
+
+                }
+
+
+                if (location) {
+
+                    url +=
+                        '&location=' +
+                        encodeURIComponent(location);
+
+                }
+
+
+                const r = await fetch(url);
+
+
+                if (!r.ok) {
+
+                    throw new Error('Backend unavailable');
+
+                }
+
+
+                const data = await r.json();
+
+
+                render(data);
+
+
+                msg.textContent = data.length
+                    ? 'Live records loaded from TexHive backend.'
+                    : 'No live records for this filter/date.';
+
+            }
+
+
+            catch (e) {
+
+                const data = demoPrices.filter(
+                    p =>
+                        (
+                            !product ||
+                            p[0]
+                                .toLowerCase()
+                                .includes(product.toLowerCase())
+                        )
+                        &&
+                        (
+                            !location ||
+                            p[1]
+                                .toLowerCase()
+                                .includes(location.toLowerCase())
+                        )
+                );
+
+
+                render(
+                    data.map(
+                        p => ({
+                            productName: p[0],
+                            location: p[1],
+                            price: p[2],
+                            unit: p[3],
+                            trend: p[4],
+                            sourceName: p[5],
+                            priceDate: date
+                        })
+                    )
+                );
+
+
+                msg.textContent =
+                    'Predefined data';
+
+            }
+
+        }
+
+
+        function render(data) {
+
+            document.getElementById('prices').innerHTML =
+                data.length
+
+                    ? data
+                        .map(
+                            p => `
+                                <div class="card">
+
+                                    <span class="badge">
+                                        ${p.productName || 'Market commodity'}
+                                    </span>
+
+                                    <h2>
+                                        ₹${p.price ?? '—'} / ${p.unit || 'unit'}
+                                    </h2>
+
+                                    <p class="muted">
+                                        ${p.location || '—'}
+                                    </p>
+
+                                    <span
+                                        class="badge ${p.trend === 'DOWN' ? 'good' : ''}"
+                                    >
+                                        ${p.trend || 'MARKET'}
+                                    </span>
+
+                                    <p
+                                        class="muted"
+                                        style="font-size: 12px"
+                                    >
+                                        ${p.sourceName || 'Unknown source'}
+                                        ·
+                                        ${p.priceDate || ''}
+                                    </p>
+
+                                </div>
+                            `
+                        )
+                        .join('')
+
+                    : `
+                        <div class="panel empty">
+                            No price records found.
+                        </div>
+                    `;
+
+        }
+
+
+        async function syncPrices() {
+
+            const msg =
+                document.getElementById('priceMessage');
+
+
+            try {
+
+                const r = await fetch(
+                    API + '/market-intelligence/sync',
+                    {
+                        method: 'POST'
+                    }
+                );
+
+
+                const d = await r.json();
+
+
+                msg.textContent =
+                    `Government sync completed. ${d.saved} record(s) saved.`;
+
+
+                await loadPrices();
+
+            }
+
+
+            catch (e) {
+
+                msg.textContent =
+                    'Sync requires the Spring Boot backend and a configured data.gov.in API key/resource ID.';
+
+            }
+
+        }
+
+    </script>
+
+<script src="js/sidebar.js"></script>
+</body>
+
+</html>

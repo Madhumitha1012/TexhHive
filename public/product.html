@@ -1,0 +1,219 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Product Details | TexHive</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body onload="initProduct()">
+
+    <header class="nav">
+
+        <a class="logo" href="marketplace.html">
+            TEX<span>HIVE</span>
+        </a>
+
+        <a class="ghost" href="marketplace.html">
+            Marketplace
+        </a>
+
+    </header>
+
+
+    <main class="page">
+
+        <div id="detail" class="card"></div>
+
+    </main>
+
+
+    <script src="js/api.js"></script>
+    <script src="js/core.js"></script>
+    <script src="js/marketplace.js"></script>
+
+
+    <script>
+
+        function initProduct() {
+
+            ensureUser();
+
+            const pid = new URLSearchParams(location.search).get('id');
+
+            const p =
+                products().find(
+                    x => String(x.id) === String(pid)
+                ) || products()[0];
+
+
+            if (!p) {
+
+                detail.innerHTML =
+                    '<div class="empty">Product not found.</div>';
+
+                return;
+            }
+
+
+            detail.innerHTML = `
+
+                <div class="product-detail-grid">
+
+                    <div>
+
+                        <img
+                            class="product-detail-image"
+                            src="${escapeHtml(
+                                p.image || 'images/products/premium-cotton.svg'
+                            )}"
+                            alt="${escapeHtml(p.name)}"
+                        >
+
+                    </div>
+
+
+                    <div>
+
+                        <p class="eyebrow">
+                            PRODUCT DETAILS
+                        </p>
+
+
+                        <span class="badge">
+                            ${escapeHtml(p.category || 'Textile')}
+                        </span>
+
+
+                        <h1 style="font:700 42px 'Space Grotesk'">
+                            ${escapeHtml(p.name)}
+                        </h1>
+
+
+                        <p class="muted">
+                            ${escapeHtml(
+                                p.description ||
+                                'TexHive textile marketplace product.'
+                            )}
+                        </p>
+
+
+                        <div class="grid">
+
+
+                            <div>
+
+                                <span class="muted">
+                                    PRODUCT ID
+                                </span>
+
+                                <h3>
+                                    ${escapeHtml(p.id)}
+                                </h3>
+
+                            </div>
+
+
+                            <div>
+
+                                <span class="muted">
+                                    PRICE
+                                </span>
+
+                                <h2 class="price">
+                                    ₹${escapeHtml(p.price)}/${escapeHtml(p.unit)}
+                                </h2>
+
+                            </div>
+
+
+                            <div>
+
+                                <span class="muted">
+                                    MOQ
+                                </span>
+
+                                <h2>
+                                    ${escapeHtml(p.moq)}
+                                    ${escapeHtml(p.unit)}
+                                </h2>
+
+                            </div>
+
+
+                            <div>
+
+                                <span class="muted">
+                                    AVAILABLE
+                                </span>
+
+                                <h2>
+                                    ${escapeHtml(p.availableQty)}
+                                    ${escapeHtml(p.unit)}
+                                </h2>
+
+                            </div>
+
+
+                        </div>
+
+
+                        <hr style="border-color:#222">
+
+
+                        <p>
+                            <b>Material:</b>
+                            ${escapeHtml(p.material || '—')}
+
+                            &nbsp;
+
+                            <b>GSM:</b>
+                            ${escapeHtml(p.gsm || '—')}
+
+                            &nbsp;
+
+                            <b>Width:</b>
+                            ${escapeHtml(p.width || '—')}
+                        </p>
+
+
+                        <p>
+
+                            <b>Supplier:</b>
+                            ${escapeHtml(p.supplier || 'Supplier')}
+
+                            &nbsp;
+
+                            <b>Location:</b>
+                            ${escapeHtml(p.location || '—')}
+
+                        </p>
+
+
+                        <a
+                            class="primary"
+                            href="rfq.html?productId=${encodeURIComponent(p.id)}"
+                        >
+                            REQUEST QUOTATION
+                        </a>
+
+
+                    </div>
+
+                </div>
+
+            `;
+
+        }
+
+    </script>
+
+
+    <script src="js/sidebar.js"></script>
+
+</body>
+
+</html>
