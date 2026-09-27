@@ -6,7 +6,11 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/admin")
-@CrossOrigin(origins = {"http://localhost:3000", "http://127.0.0.1:3000"})
+@CrossOrigin(origins = {
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://texhive-delta.vercel.app"
+})
 public class AdminController {
     private final JdbcTemplate db;
     public AdminController(JdbcTemplate db) { this.db = db; }
