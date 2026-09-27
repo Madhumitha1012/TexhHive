@@ -16,7 +16,6 @@ import java.util.*;
     "https://texhive-delta.vercel.app"
 })
 public class AuthController {
-public class AuthController {
 
     private static final String ADMIN_EMAIL = "admin@texhive.com";
     private static final String ADMIN_PASSWORD = "Admin@12345";
