@@ -10,7 +10,12 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = {"http://localhost:3000", "http://127.0.0.1:3000"})
+@CrossOrigin(origins = {
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://texhive-delta.vercel.app"
+})
+public class AuthController {
 public class AuthController {
 
     private static final String ADMIN_EMAIL = "admin@texhive.com";
