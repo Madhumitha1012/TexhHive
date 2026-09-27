@@ -15,6 +15,7 @@ import java.util.*;
     "http://127.0.0.1:3000",
     "https://texhive-delta.vercel.app"
 })
+
 public class AuthController {
 
     private static final String ADMIN_EMAIL = "admin@texhive.com";

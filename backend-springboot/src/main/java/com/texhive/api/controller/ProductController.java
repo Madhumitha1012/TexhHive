@@ -7,7 +7,11 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/products")
-@CrossOrigin(origins = {"http://localhost:3000", "http://127.0.0.1:3000"})
+@CrossOrigin(origins = {
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://texhive-delta.vercel.app"
+})
 public class ProductController {
     private final JdbcTemplate db;
     public ProductController(JdbcTemplate db) { this.db = db; }
